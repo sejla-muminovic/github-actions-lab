@@ -13,7 +13,17 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [18.x, 20.x, 22.x]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        exclude:
+          - os: windows-latest
+            node-version: 18.x
+          - os: macos-latest
+            node-version: 18.x
+        include:
+          - os: ubuntu-latest
+            node-version: 20.x
+            experimental: true
+            extra-flag: "--coverage"
     steps:
       - uses: actions/checkout@v4
       - name: Postavi Node.js ${{ matrix.node-version }}
@@ -23,7 +33,10 @@ jobs:
           cache: "npm"
       - name: Instaliraj zavisnosti
         run: npm ci
-      - name: Pokreni testove
-        run: npm test
+      - name: Pokreni testove s flagovima
+        run: npm test -- ${{ matrix.extra-flag || '' }}
+      - name: Eksperimentalno upozorenje
+        if: matrix.experimental == true
+        run: echo "Ovo je eksperimentalna kombinacija!"
       - name: Ispisi okruzenje
         run: node --version && npm --version
